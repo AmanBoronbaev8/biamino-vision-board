@@ -12,11 +12,12 @@ export interface Project {
   description: string;
   emoji: string;
   department: 'present' | 'future';
-  status: 'development' | 'archive' | 'production';
+  status: string;
   secondary_status: string;
   goal: string;
   github_url?: string;
   revenue: boolean;
+  revenue_amount?: string;
   requirements: string;
   inventory: string;
   is_private: boolean;

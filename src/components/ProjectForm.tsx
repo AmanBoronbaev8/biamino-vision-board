@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { Project, CustomField, ProjectLink } from '../types';
+import { useAuth } from '../context/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -9,6 +9,7 @@ import { Switch } from './ui/switch';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Plus, X, Save } from 'lucide-react';
+import EmojiPicker from './EmojiPicker';
 
 interface ProjectFormProps {
   project?: Project;
@@ -18,16 +19,18 @@ interface ProjectFormProps {
 }
 
 const ProjectForm: React.FC<ProjectFormProps> = ({ project, department, onClose, onSave }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState<Partial<Project>>({
     title: project?.title || '',
     description: project?.description || '',
     emoji: project?.emoji || '📝',
     department: project?.department || department,
-    status: project?.status || 'development',
+    status: project?.status || 'В разработке',
     secondary_status: project?.secondary_status || '',
     goal: project?.goal || '',
     github_url: project?.github_url || '',
     revenue: project?.revenue || false,
+    revenue_amount: project?.revenue_amount || '',
     requirements: project?.requirements || '',
     inventory: project?.inventory || '',
     is_private: project?.is_private || false,
@@ -63,6 +66,15 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, department, onClose,
     localStorage.setItem('biamino_projects', JSON.stringify(projects));
     onSave();
   };
+
+  const statusSuggestions = [
+    'В разработке',
+    'Тестирование', 
+    'В архиве',
+    'В проде',
+    'Сбор инфы',
+    'Тестировка гипотез'
+  ];
 
   const addCustomField = () => {
     setFormData(prev => ({
@@ -138,11 +150,9 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, department, onClose,
             
             <div>
               <label className="block text-sm font-medium mb-1">Эмодзи</label>
-              <Input
-                value={formData.emoji}
-                onChange={(e) => setFormData(prev => ({ ...prev, emoji: e.target.value }))}
-                placeholder="📝"
-                className="text-center"
+              <EmojiPicker
+                value={formData.emoji || '📝'}
+                onChange={(emoji) => setFormData(prev => ({ ...prev, emoji }))}
               />
             </div>
           </div>
@@ -160,19 +170,27 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, department, onClose,
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Статус</label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as any }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="development">В разработке</SelectItem>
-                  <SelectItem value="production">В продакшене</SelectItem>
-                  <SelectItem value="archive">В архиве</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Input
+                  value={formData.status}
+                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+                  placeholder="Введите статус"
+                />
+                <div className="flex flex-wrap gap-1">
+                  {statusSuggestions.map((status) => (
+                    <Button
+                      key={status}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => setFormData(prev => ({ ...prev, status }))}
+                    >
+                      {status}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div>
@@ -205,23 +223,34 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, department, onClose,
               />
             </div>
 
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={formData.revenue}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, revenue: checked }))}
-                />
-                <label className="text-sm font-medium">Приносит доход</label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={formData.is_private}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_private: checked }))}
-                />
-                <label className="text-sm font-medium">Приватный</label>
-              </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={formData.is_private}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_private: checked }))}
+              />
+              <label className="text-sm font-medium">Приватный</label>
             </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={formData.revenue}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, revenue: checked }))}
+              />
+              <label className="text-sm font-medium">Приносит доход</label>
+            </div>
+            
+            {formData.revenue && user?.role === 'admin' && (
+              <div>
+                <label className="block text-sm font-medium mb-1">Размер дохода</label>
+                <Input
+                  value={formData.revenue_amount}
+                  onChange={(e) => setFormData(prev => ({ ...prev, revenue_amount: e.target.value }))}
+                  placeholder="например: 100$/месяц"
+                />
+              </div>
+            )}
           </div>
 
           <div>

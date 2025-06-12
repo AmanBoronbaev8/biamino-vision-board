@@ -31,17 +31,6 @@ const LoginForm: React.FC = () => {
     }
   };
 
-  const quickLogin = (userType: 'admin' | 'user' | 'team') => {
-    const credentials = {
-      admin: { email: 'admin@biamino.com', password: 'admin123' },
-      user: { email: 'user@biamino.com', password: 'user123' },
-      team: { email: 'team@biamino.com', password: 'team123' }
-    };
-    
-    setEmail(credentials[userType].email);
-    setPassword(credentials[userType].password);
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
       <div className="w-full max-w-md">
@@ -108,36 +97,6 @@ const LoginForm: React.FC = () => {
                 {loading ? 'Вход...' : 'Войти'}
               </Button>
             </form>
-
-            <div className="mt-6 space-y-2">
-              <p className="text-sm text-gray-500 text-center">Быстрый вход:</p>
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => quickLogin('admin')}
-                  className="text-xs"
-                >
-                  Админ
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => quickLogin('team')}
-                  className="text-xs"
-                >
-                  Команда
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => quickLogin('user')}
-                  className="text-xs"
-                >
-                  Пользователь
-                </Button>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>

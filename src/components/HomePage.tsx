@@ -80,35 +80,6 @@ const HomePage: React.FC = () => {
           </Card>
         ))}
       </div>
-
-      <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-8 max-w-4xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-6 text-center">
-          <div>
-            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-              12+
-            </div>
-            <div className="text-gray-600 dark:text-gray-300">
-              Активных проектов
-            </div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-              85%
-            </div>
-            <div className="text-gray-600 dark:text-gray-300">
-              Успешность проектов
-            </div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-              24/7
-            </div>
-            <div className="text-gray-600 dark:text-gray-300">
-              Мониторинг системы
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
