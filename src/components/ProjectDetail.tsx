@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -120,6 +119,26 @@ const ProjectDetail: React.FC = () => {
     return 'NDA - Конфиденциальная информация';
   };
 
+  const renderFieldWithNDA = (title: string, value: string, isNda: boolean = false) => {
+    if (!value) return null;
+    
+    return (
+      <div>
+        <div className="flex items-center space-x-2 mb-2">
+          <h4 className="font-semibold">{title}</h4>
+          {isNda && (
+            <Badge variant="destructive" className="text-xs">
+              NDA
+            </Badge>
+          )}
+        </div>
+        <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
+          {getFieldValue(value, isNda)}
+        </p>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -188,7 +207,9 @@ const ProjectDetail: React.FC = () => {
                   {project.revenue && (
                     <div className="flex items-center space-x-1 text-green-600">
                       <DollarSign className="w-4 h-4" />
-                      <span className="text-sm">Доходный</span>
+                      <span className="text-sm">
+                        {project.revenue_amount ? `Доходный (${project.revenue_amount})` : 'Доходный'}
+                      </span>
                     </div>
                   )}
                   {project.github_url && (
@@ -207,39 +228,10 @@ const ProjectDetail: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div>
-                  <h4 className="font-semibold mb-2">Описание</h4>
-                  <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
-                    {project.description}
-                  </p>
-                </div>
-
-                {project.goal && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Цель проекта</h4>
-                    <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
-                      {getFieldValue(project.goal, false)}
-                    </p>
-                  </div>
-                )}
-
-                {project.requirements && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Требования</h4>
-                    <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
-                      {getFieldValue(project.requirements, false)}
-                    </p>
-                  </div>
-                )}
-
-                {project.inventory && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Инвентарь</h4>
-                    <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
-                      {getFieldValue(project.inventory, false)}
-                    </p>
-                  </div>
-                )}
+                {renderFieldWithNDA('Описание', project.description, project.description_is_nda)}
+                {renderFieldWithNDA('Цель проекта', project.goal, project.goal_is_nda)}
+                {renderFieldWithNDA('Требования', project.requirements, project.requirements_is_nda)}
+                {renderFieldWithNDA('Инвентарь', project.inventory, project.inventory_is_nda)}
 
                 {/* Ссылки */}
                 {project.links && project.links.length > 0 && (

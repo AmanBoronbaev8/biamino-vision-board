@@ -8,7 +8,7 @@ import { Textarea } from './ui/textarea';
 import { Switch } from './ui/switch';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Plus, X, Save } from 'lucide-react';
+import { Plus, X, Save, Eye, EyeOff } from 'lucide-react';
 import EmojiPicker from './EmojiPicker';
 
 interface ProjectFormProps {
@@ -35,7 +35,11 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, department, onClose,
     inventory: project?.inventory || '',
     is_private: project?.is_private || false,
     custom_fields: project?.custom_fields || [],
-    links: project?.links || []
+    links: project?.links || [],
+    description_is_nda: project?.description_is_nda || false,
+    goal_is_nda: project?.goal_is_nda || false,
+    requirements_is_nda: project?.requirements_is_nda || false,
+    inventory_is_nda: project?.inventory_is_nda || false
   });
 
   const handleSave = () => {
@@ -75,6 +79,44 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, department, onClose,
     'Сбор инфы',
     'Тестировка гипотез'
   ];
+
+  const renderFieldWithNDA = (
+    label: string,
+    value: string,
+    onChange: (value: string) => void,
+    isNda: boolean,
+    onNdaChange: (isNda: boolean) => void,
+    component: 'input' | 'textarea' = 'input',
+    rows?: number
+  ) => (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <label className="block text-sm font-medium">{label}</label>
+        {user?.role === 'admin' && (
+          <div className="flex items-center space-x-1">
+            <Switch
+              checked={isNda}
+              onCheckedChange={onNdaChange}
+            />
+            <span className="text-xs text-gray-600">NDA</span>
+            {isNda ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+          </div>
+        )}
+      </div>
+      {component === 'textarea' ? (
+        <Textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          rows={rows}
+        />
+      ) : (
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )}
+    </div>
+  );
 
   const addCustomField = () => {
     setFormData(prev => ({
@@ -157,15 +199,15 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, department, onClose,
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Описание</label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Краткое описание проекта"
-              rows={3}
-            />
-          </div>
+          {renderFieldWithNDA(
+            'Описание',
+            formData.description || '',
+            (value) => setFormData(prev => ({ ...prev, description: value })),
+            formData.description_is_nda || false,
+            (isNda) => setFormData(prev => ({ ...prev, description_is_nda: isNda })),
+            'textarea',
+            3
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -203,15 +245,15 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, department, onClose,
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Цель проекта</label>
-            <Textarea
-              value={formData.goal}
-              onChange={(e) => setFormData(prev => ({ ...prev, goal: e.target.value }))}
-              placeholder="Цель и задачи проекта"
-              rows={2}
-            />
-          </div>
+          {renderFieldWithNDA(
+            'Цель проекта',
+            formData.goal || '',
+            (value) => setFormData(prev => ({ ...prev, goal: value })),
+            formData.goal_is_nda || false,
+            (isNda) => setFormData(prev => ({ ...prev, goal_is_nda: isNda })),
+            'textarea',
+            2
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -253,25 +295,25 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, department, onClose,
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Требования</label>
-            <Textarea
-              value={formData.requirements}
-              onChange={(e) => setFormData(prev => ({ ...prev, requirements: e.target.value }))}
-              placeholder="Технические требования и зависимости"
-              rows={3}
-            />
-          </div>
+          {renderFieldWithNDA(
+            'Требования',
+            formData.requirements || '',
+            (value) => setFormData(prev => ({ ...prev, requirements: value })),
+            formData.requirements_is_nda || false,
+            (isNda) => setFormData(prev => ({ ...prev, requirements_is_nda: isNda })),
+            'textarea',
+            3
+          )}
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Инвентарь</label>
-            <Textarea
-              value={formData.inventory}
-              onChange={(e) => setFormData(prev => ({ ...prev, inventory: e.target.value }))}
-              placeholder="Используемые ресурсы и инструменты"
-              rows={3}
-            />
-          </div>
+          {renderFieldWithNDA(
+            'Инвентарь',
+            formData.inventory || '',
+            (value) => setFormData(prev => ({ ...prev, inventory: value })),
+            formData.inventory_is_nda || false,
+            (isNda) => setFormData(prev => ({ ...prev, inventory_is_nda: isNda })),
+            'textarea',
+            3
+          )}
 
           {/* Ссылки */}
           <div>

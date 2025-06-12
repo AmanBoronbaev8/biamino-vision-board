@@ -25,6 +25,11 @@ export interface Project {
   updated_at: string;
   custom_fields: CustomField[];
   links: ProjectLink[];
+  // NDA flags for regular fields
+  goal_is_nda?: boolean;
+  requirements_is_nda?: boolean;
+  inventory_is_nda?: boolean;
+  description_is_nda?: boolean;
 }
 
 export interface CustomField {
