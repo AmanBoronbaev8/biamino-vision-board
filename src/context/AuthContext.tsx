@@ -7,6 +7,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   loading: boolean;
+  isPublicAccess: boolean;
+  canComment: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -68,8 +70,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('biamino_user');
   };
 
+  const isPublicAccess = !user;
+  const canComment = user && (user.role === 'admin' || user.role === 'team');
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, isPublicAccess, canComment }}>
       {children}
     </AuthContext.Provider>
   );

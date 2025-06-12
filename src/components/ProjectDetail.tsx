@@ -7,13 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Textarea } from './ui/textarea';
-import { ArrowLeft, Edit, DollarSign, Github, ExternalLink, MessageCircle, Send, EyeOff, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, DollarSign, Github, ExternalLink, MessageCircle, Send, EyeOff, Trash2, LogIn } from 'lucide-react';
 import ProjectForm from './ProjectForm';
 
 const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, canComment } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -39,7 +39,7 @@ const ProjectDetail: React.FC = () => {
   };
 
   const handleAddComment = () => {
-    if (!newComment.trim() || !user) return;
+    if (!newComment.trim() || !user || !canComment) return;
 
     const comment: Comment = {
       id: Date.now().toString(),
@@ -135,6 +135,15 @@ const ProjectDetail: React.FC = () => {
         </div>
 
         <div className="flex space-x-2">
+          {!user && (
+            <Button
+              variant="outline"
+              onClick={() => navigate('/login')}
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              Войти как админ/команда
+            </Button>
+          )}
           {user?.role === 'admin' && (
             <>
               <Button
@@ -188,7 +197,12 @@ const ProjectDetail: React.FC = () => {
                   {project.revenue && (
                     <div className="flex items-center space-x-1 text-green-600">
                       <DollarSign className="w-4 h-4" />
-                      <span className="text-sm">Доходный</span>
+                      <div className="text-sm">
+                        <span>Доходный</span>
+                        {project.revenue_amount && (
+                          <div className="font-semibold">{project.revenue_amount}</div>
+                        )}
+                      </div>
                     </div>
                   )}
                   {project.github_url && (
@@ -305,23 +319,41 @@ const ProjectDetail: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Форма добавления комментария */}
-              <div className="space-y-2">
-                <Textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Добавить комментарий..."
-                  rows={3}
-                />
-                <Button
-                  onClick={handleAddComment}
-                  disabled={!newComment.trim()}
-                  size="sm"
-                  className="w-full"
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  Отправить
-                </Button>
-              </div>
+              {canComment ? (
+                <div className="space-y-2">
+                  <Textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Добавить комментарий..."
+                    rows={3}
+                  />
+                  <Button
+                    onClick={handleAddComment}
+                    disabled={!newComment.trim()}
+                    size="sm"
+                    className="w-full"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Отправить
+                  </Button>
+                </div>
+              ) : (
+                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                    Только команда и администраторы могут оставлять комментарии
+                  </p>
+                  {!user && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate('/login')}
+                    >
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Войти
+                    </Button>
+                  )}
+                </div>
+              )}
 
               {/* Список комментариев */}
               <div className="space-y-3 max-h-96 overflow-y-auto">
