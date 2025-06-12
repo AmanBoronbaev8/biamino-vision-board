@@ -11,7 +11,7 @@ import ProjectsList from '../components/ProjectsList';
 import ProjectDetail from '../components/ProjectDetail';
 
 const AppRoutes: React.FC = () => {
-  const { loading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -24,13 +24,16 @@ const AppRoutes: React.FC = () => {
     );
   }
 
+  if (!user) {
+    return <LoginForm />;
+  }
+
   return (
     <Layout>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/projects/:department" element={<ProjectsList />} />
         <Route path="/project/:id" element={<ProjectDetail />} />
-        <Route path="/login" element={<LoginForm />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>
