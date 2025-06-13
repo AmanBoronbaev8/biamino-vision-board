@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { Project } from '../types';
 
-export const useProjects = (department?: string) => {
+export const useProjects = (department?: 'present' | 'future') => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
