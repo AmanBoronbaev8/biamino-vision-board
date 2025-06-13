@@ -1,13 +1,13 @@
+
 import React, { useState } from 'react';
 import { Project, CustomField, ProjectLink } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { useProjects } from '../hooks/useProjects';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Switch } from './ui/switch';
-import { Badge } from './ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Plus, X, Save, Eye, EyeOff } from 'lucide-react';
 import EmojiPicker from './EmojiPicker';
 
@@ -20,6 +20,8 @@ interface ProjectFormProps {
 
 const ProjectForm: React.FC<ProjectFormProps> = ({ project, department, onClose, onSave }) => {
   const { user } = useAuth();
+  const { createProject, updateProject } = useProjects();
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState<Partial<Project>>({
     title: project?.title || '',
     description: project?.description || '',
@@ -42,33 +44,22 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, department, onClose,
     inventory_is_nda: project?.inventory_is_nda || false
   });
 
-  const handleSave = () => {
-    const saved = localStorage.getItem('biamino_projects');
-    const projects: Project[] = saved ? JSON.parse(saved) : [];
-    
-    if (project) {
-      // Редактирование
-      const index = projects.findIndex(p => p.id === project.id);
-      if (index !== -1) {
-        projects[index] = {
-          ...project,
-          ...formData,
-          updated_at: new Date().toISOString()
-        } as Project;
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      if (project) {
+        // Редактирование
+        await updateProject(project.id, formData);
+      } else {
+        // Создание
+        await createProject(formData as Omit<Project, 'id' | 'created_at' | 'updated_at'>);
       }
-    } else {
-      // Создание
-      const newProject: Project = {
-        id: Date.now().toString(),
-        ...formData,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      } as Project;
-      projects.push(newProject);
+      onSave();
+    } catch (error) {
+      console.error('Error saving project:', error);
+    } finally {
+      setSaving(false);
     }
-    
-    localStorage.setItem('biamino_projects', JSON.stringify(projects));
-    onSave();
   };
 
   const statusSuggestions = [
@@ -429,9 +420,9 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, department, onClose,
           <Button variant="outline" onClick={onClose}>
             Отмена
           </Button>
-          <Button onClick={handleSave}>
+          <Button onClick={handleSave} disabled={saving}>
             <Save className="w-4 h-4 mr-2" />
-            Сохранить
+            {saving ? 'Сохранение...' : 'Сохранить'}
           </Button>
         </div>
       </DialogContent>

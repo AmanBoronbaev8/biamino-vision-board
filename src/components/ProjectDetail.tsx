@@ -1,7 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Project, Comment } from '../types';
+import { useProjects } from '../hooks/useProjects';
+import { useComments } from '../hooks/useComments';
+import { Project } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -13,68 +16,37 @@ const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { projects, deleteProject } = useProjects();
+  const { comments, addComment, deleteComment } = useComments(id!);
   const [project, setProject] = useState<Project | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [showEditForm, setShowEditForm] = useState(false);
 
   useEffect(() => {
-    loadProject();
-    loadComments();
-  }, [id]);
-
-  const loadProject = () => {
-    const saved = localStorage.getItem('biamino_projects');
-    const projects: Project[] = saved ? JSON.parse(saved) : [];
     const foundProject = projects.find(p => p.id === id);
     setProject(foundProject || null);
-  };
+  }, [projects, id]);
 
-  const loadComments = () => {
-    const saved = localStorage.getItem('biamino_comments');
-    const allComments: Comment[] = saved ? JSON.parse(saved) : [];
-    const projectComments = allComments.filter(c => c.project_id === id);
-    setComments(projectComments);
-  };
-
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!newComment.trim() || !user) return;
 
-    const comment: Comment = {
-      id: Date.now().toString(),
-      project_id: id!,
-      user_id: user.id,
-      content: newComment,
-      created_at: new Date().toISOString(),
-      user: user
-    };
-
-    const saved = localStorage.getItem('biamino_comments');
-    const allComments: Comment[] = saved ? JSON.parse(saved) : [];
-    allComments.push(comment);
-    localStorage.setItem('biamino_comments', JSON.stringify(allComments));
-
-    setComments([...comments, comment]);
-    setNewComment('');
+    const success = await addComment(newComment, user.id);
+    if (success) {
+      setNewComment('');
+    }
   };
 
-  const deleteComment = (commentId: string) => {
-    const saved = localStorage.getItem('biamino_comments');
-    const allComments: Comment[] = saved ? JSON.parse(saved) : [];
-    const filteredComments = allComments.filter(c => c.id !== commentId);
-    localStorage.setItem('biamino_comments', JSON.stringify(filteredComments));
-    loadComments();
+  const handleDeleteComment = async (commentId: string) => {
+    await deleteComment(commentId);
   };
 
-  const deleteProject = () => {
+  const handleDeleteProject = async () => {
     if (!confirm('Вы уверены, что хотите удалить этот проект?')) return;
 
-    const saved = localStorage.getItem('biamino_projects');
-    const projects: Project[] = saved ? JSON.parse(saved) : [];
-    const filteredProjects = projects.filter(p => p.id !== id);
-    localStorage.setItem('biamino_projects', JSON.stringify(filteredProjects));
-    
-    navigate(`/projects/${project?.department}`);
+    const success = await deleteProject(id!);
+    if (success) {
+      navigate(`/projects/${project?.department}`);
+    }
   };
 
   if (!project) {
@@ -165,7 +137,7 @@ const ProjectDetail: React.FC = () => {
               </Button>
               <Button
                 variant="destructive"
-                onClick={deleteProject}
+                onClick={handleDeleteProject}
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Удалить
@@ -339,7 +311,7 @@ const ProjectDetail: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => deleteComment(comment.id)}
+                          onClick={() => handleDeleteComment(comment.id)}
                         >
                           <Trash2 className="w-3 h-3" />
                         </Button>
@@ -370,10 +342,7 @@ const ProjectDetail: React.FC = () => {
           project={project}
           department={project.department}
           onClose={() => setShowEditForm(false)}
-          onSave={() => {
-            setShowEditForm(false);
-            loadProject();
-          }}
+          onSave={() => setShowEditForm(false)}
         />
       )}
     </div>

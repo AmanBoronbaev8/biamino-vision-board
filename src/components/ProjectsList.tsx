@@ -1,38 +1,20 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Project } from '../types';
+import { useProjects } from '../hooks/useProjects';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Plus, ArrowLeft, Eye, EyeOff, DollarSign, Github } from 'lucide-react';
+import { Plus, ArrowLeft, EyeOff, DollarSign, Github } from 'lucide-react';
 import ProjectForm from './ProjectForm';
 
 const ProjectsList: React.FC = () => {
   const { department } = useParams<{ department: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [projects, setProjects] = useState<Project[]>([]);
+  const { projects, loading } = useProjects(department);
   const [showForm, setShowForm] = useState(false);
-
-  useEffect(() => {
-    loadProjects();
-  }, [department]);
-
-  const loadProjects = () => {
-    const saved = localStorage.getItem('biamino_projects');
-    const allProjects: Project[] = saved ? JSON.parse(saved) : [];
-    
-    let filteredProjects = allProjects.filter(p => p.department === department);
-    
-    // Фильтрация для пользователей (скрыть приватные проекты)
-    if (user?.role === 'user') {
-      filteredProjects = filteredProjects.filter(p => !p.is_private);
-    }
-    
-    setProjects(filteredProjects);
-  };
 
   const departmentInfo = {
     present: {
@@ -48,6 +30,11 @@ const ProjectsList: React.FC = () => {
   };
 
   const currentDept = departmentInfo[department as keyof typeof departmentInfo];
+
+  // Filter projects based on user role
+  const filteredProjects = user?.role === 'user' 
+    ? projects.filter(p => !p.is_private)
+    : projects;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -66,6 +53,14 @@ const ProjectsList: React.FC = () => {
       default: return status;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-xl">Загрузка проектов...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -100,7 +95,7 @@ const ProjectsList: React.FC = () => {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {projects.map((project) => (
+        {filteredProjects.map((project) => (
           <Card
             key={project.id}
             className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-lg border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
@@ -153,7 +148,7 @@ const ProjectsList: React.FC = () => {
         ))}
       </div>
 
-      {projects.length === 0 && (
+      {filteredProjects.length === 0 && (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">📭</div>
           <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">
@@ -172,10 +167,7 @@ const ProjectsList: React.FC = () => {
         <ProjectForm
           department={department as 'present' | 'future'}
           onClose={() => setShowForm(false)}
-          onSave={() => {
-            setShowForm(false);
-            loadProjects();
-          }}
+          onSave={() => setShowForm(false)}
         />
       )}
     </div>

@@ -9,7 +9,199 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          project_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          project_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          project_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_fields: {
+        Row: {
+          id: string
+          is_nda: boolean | null
+          key: string
+          project_id: string | null
+          value: string | null
+        }
+        Insert: {
+          id?: string
+          is_nda?: boolean | null
+          key: string
+          project_id?: string | null
+          value?: string | null
+        }
+        Update: {
+          id?: string
+          is_nda?: boolean | null
+          key?: string
+          project_id?: string | null
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_fields_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_links: {
+        Row: {
+          description: string | null
+          id: string
+          project_id: string | null
+          title: string
+          url: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          project_id?: string | null
+          title: string
+          url: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          project_id?: string | null
+          title?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_links_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string | null
+          department: Database["public"]["Enums"]["department_type"]
+          description: string | null
+          description_is_nda: boolean | null
+          emoji: string | null
+          github_url: string | null
+          goal: string | null
+          goal_is_nda: boolean | null
+          id: string
+          inventory: string | null
+          inventory_is_nda: boolean | null
+          is_private: boolean | null
+          requirements: string | null
+          requirements_is_nda: boolean | null
+          revenue: boolean | null
+          revenue_amount: string | null
+          secondary_status: string | null
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          department: Database["public"]["Enums"]["department_type"]
+          description?: string | null
+          description_is_nda?: boolean | null
+          emoji?: string | null
+          github_url?: string | null
+          goal?: string | null
+          goal_is_nda?: boolean | null
+          id?: string
+          inventory?: string | null
+          inventory_is_nda?: boolean | null
+          is_private?: boolean | null
+          requirements?: string | null
+          requirements_is_nda?: boolean | null
+          revenue?: boolean | null
+          revenue_amount?: string | null
+          secondary_status?: string | null
+          status: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          department?: Database["public"]["Enums"]["department_type"]
+          description?: string | null
+          description_is_nda?: boolean | null
+          emoji?: string | null
+          github_url?: string | null
+          goal?: string | null
+          goal_is_nda?: boolean | null
+          id?: string
+          inventory?: string | null
+          inventory_is_nda?: boolean | null
+          is_private?: boolean | null
+          requirements?: string | null
+          requirements_is_nda?: boolean | null
+          revenue?: boolean | null
+          revenue_amount?: string | null
+          secondary_status?: string | null
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +210,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      department_type: "present" | "future"
+      user_role: "admin" | "user" | "team"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +326,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      department_type: ["present", "future"],
+      user_role: ["admin", "user", "team"],
+    },
   },
 } as const
