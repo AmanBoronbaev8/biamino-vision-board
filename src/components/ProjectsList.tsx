@@ -13,7 +13,7 @@ const ProjectsList: React.FC = () => {
   const { department } = useParams<{ department: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { projects, loading } = useProjects(department);
+  const { projects, loading } = useProjects(department as 'present' | 'future');
   const [showForm, setShowForm] = useState(false);
 
   const departmentInfo = {
